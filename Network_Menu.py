@@ -65,8 +65,20 @@ def link_status(ip, username, password):
         return x
 
 
+def get_interface_name(ip, username, password):
+    with driver(ip, username, password) as device:
+        print(f'Connecting to {ip}')
+        interfaces = device.get_interfaces()
+        print('-' * 80)
+        for interface in interfaces:
+            int = interface
+            description = interfaces[interface]['description']
+            print(int,description)
+    x = ''
+    return x
+
+
 def port_security(ip, username, password):
-    port = 22
     with driver(ip, username, password,port) as device:
         print(f'Connecting to {ip}\n')
         print('-' * 80)
@@ -103,31 +115,41 @@ def ios_upgrade(ip, username, password):
             return x
         elif update.upper() == 'Y':
             print('Updating...')
-            with open('ios_upgrade.txt','r') as f:
-                ios_update = f.read()
-                device.load_merge_candidate(config='vlan 20\nname TESTING\nint vlan 20\nip addr 10.0.0.100 255.255.255.0\nend\nwr\n')
-                device.commit_config()
-                print('...')
-                print('Done')
-                restart = input('Would you like to restart [Y/N] ')
-                if restart.upper() == 'N':
-                    print('Exiting')
-                elif restart.upper() == 'Y':
-                    when = input('Now or Later?')
-                    if when.upper() == 'NOW':
-                         device.load_merge_candidate(config='do reload\nend\n')
-                         device.commit_config()
-                         print('Exiting')
+            location =  input('What is your tftp/scp server [x.x.x.x] \n')
+            source = input('What is your ios file name [c3750.info.bin] \n')
+            destination = source
+            config_commands = ['copy tftp://'+ location +'/' + source + ' flash:',
+                                source,
+                                destination]
+            device.device.send_config_set(config_commands)
+            for switch in range(1,9):
+                if switch == True:
+                    print('copying ios to sw',switch)
+                    line = ['copy flash:' + source + ' flash' + str(switch) + ':']
+                    device.device.send_config_set(line)
+                else:
+                    break
 
-                         print('Restarting now')
-                    else:
-                         time = input('Please enter time [hh:mm] ')
-                         day = input('Please enter date [month day] ')
-                         reason = input('Reason for reload ')
-                         print(f'Restart will execute at {time}.')
-                         device.load_merge_candidate(config= f'do reload at {time} {day} {reason} {reason}')
-                         device.commit_config()
-                         print('Exiting')
+            print('...')
+            print('Done')
+            restart = input('Would you like to restart [Y/N] ')
+            if restart.upper() == 'N':
+                print('Exiting')
+            elif restart.upper() == 'Y':
+                when = input('Now or Later?')
+                if when.upper() == 'NOW':
+                     device.device.send_command('reload in 1')
+                     print('Restarting in 1 minute')
+                     print('Exiting')
+
+                else:
+                     time_date = input('Please enter time and date [hh:mm][Month Day] ')
+                     reason = input('Reason for reload ')
+                     print(f'Restart will execute at {time_date}.')
+                     output = device.device.send_command('reload at '+ time_date + ' ' +  reason)
+                     device.device.send_command('y')
+                     print(output)
+                     print('Exiting')
     return x
 
 
@@ -149,7 +171,8 @@ def menu():
     print('3. IOS Upgrade')
     print('4. Link status for your Device')
     print('5. Check port-security')
-    print('0 to quit')
+    print('6. Check Interface Names')
+    print('0. to quit')
     print()
     print('*' * 80)
     print()
@@ -194,6 +217,15 @@ def menu():
         port_security(ip,username,password)
         input('Press enter to continue\n')
         menu()
+
+    elif tool == 6 :
+        ip = input('Please enter your IP x.x.x.x \n')
+        username = input('Please enter your username \n')
+        password = getpass('Please enter your password \n')
+        get_interface_name(ip,username,password)
+        input('Press enter to continue\n')
+        menu()
+
 
     else:
         print('Good Bye')
