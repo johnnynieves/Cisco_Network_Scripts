@@ -58,8 +58,8 @@ def link_status(ip, username, password):
             up += 1
         all_interfaces = up
         interface_port = up - down
-        print(f'\nYou have {interface_port} port(s) in state of CONNECTED')
-        print(f'You have {down} port(s) in a state of NOTCONNECT or DISABLED')
+        print(f'\nYou have {interface_port} port(s) CONNECTED')
+        print(f'You have {down} port(s) in NOTCONNECT or DISABLED')
         print(f'Total number of port(s) {all_interfaces}\n')
         x = ''
         return x
@@ -79,12 +79,12 @@ def get_interface_name(ip, username, password):
 
 
 def port_security(ip, username, password):
-    with driver(ip, username, password,port) as device:
+    with driver(ip, username, password) as device:
         print(f'Connecting to {ip}\n')
         print('-' * 80)
-        output = device.device.send_config_set(['do show port-security'])
-        print(output)
-        print('-' * 80)
+        print('The following port(s) have tripped port-security \n')
+        print(device.device.send_command('sh int status err-disabled'))
+    print('-' * 80)
 
 
 def check_ios(ip, username, password):
@@ -107,7 +107,7 @@ def check_ios(ip, username, password):
 def ios_upgrade(ip, username, password):
     with driver(ip, username, password) as device:
         x = ''
-        print(f'Connecting to {ip}')
+        print(f'\nConnecting to {ip}')
         print('-' * 80)
         update = input('Would you like to update your ios [Y/N] \n')
         if update.upper() == 'N':
@@ -116,40 +116,40 @@ def ios_upgrade(ip, username, password):
         elif update.upper() == 'Y':
             print('Updating...')
             location =  input('What is your tftp/scp server [x.x.x.x] \n')
-            source = input('What is your ios file name [c3750.info.bin] \n')
+            source = input('What is your IOS file name [c3750.info.bin] \n')
             destination = source
-            config_commands = ['copy tftp://'+ location +'/' + source + ' flash:',
+            config_commands = ['do copy tftp://'+ location +'/' + source + ' flash:',
                                 source,
                                 destination]
-            device.device.send_config_set(config_commands)
+            print(device.device.send_config_set(config_commands))
+
+            ''' not using right now
             for switch in range(1,9):
                 if switch == True:
-                    print('copying ios to sw',switch)
-                    line = ['copy flash:' + source + ' flash' + str(switch) + ':']
+                    print('Copying IOS to Switch',switch)
+                    line = ['copy flash:' + source + ' flash' + str(switch) + ':
                     device.device.send_config_set(line)
                 else:
-                    break
+                    break'''
 
-            print('...')
-            print('Done')
-            restart = input('Would you like to restart [Y/N] ')
+            print('\nFile Copied')
+            print('-' * 80)
+            set_ios = input('\nWould you like to default to new IOS at startup [Y/N] ')
+            if set_ios.upper() == 'N':
+                print('Note: You will have to set the IOS at your convinence')
+            elif set_ios.upper() == 'Y':
+                device.device.send_config_set(['boot system flash:' + source])
+                print('Exiting')
+
+            print('-' * 80)
+            restart = input('\nWould you like to restart [Y/N] ')
             if restart.upper() == 'N':
                 print('Exiting')
             elif restart.upper() == 'Y':
-                when = input('Now or Later?')
-                if when.upper() == 'NOW':
-                     device.device.send_command('reload in 1')
-                     print('Restarting in 1 minute')
-                     print('Exiting')
-
-                else:
-                     time_date = input('Please enter time and date [hh:mm][Month Day] ')
-                     reason = input('Reason for reload ')
-                     print(f'Restart will execute at {time_date}.')
-                     output = device.device.send_command('reload at '+ time_date + ' ' +  reason)
-                     device.device.send_command('y')
-                     print(output)
-                     print('Exiting')
+                when = input('In how many [HH:MM] would you like to restart?\nNOTE: Time without a ":" will default to minutes: ')
+                device.device.send_config_set(['do reload in ' + when,'y'])
+                print(f'\nRestarting in {when} [HH:MM]\n')
+                print('Exiting')
     return x
 
 
@@ -160,8 +160,6 @@ def menu():
     print('*' * 80)
     print()
     print()
-
-
     print('*' * 80)
     print()
     print('Please Select a tool')
