@@ -70,10 +70,10 @@ def get_interface_name(ip, username, password):
         print(f'Connecting to {ip}')
         interfaces = device.get_interfaces()
         print('-' * 80)
-        for interface in interfaces:
-            int = interface
+        for i in interfaces:
+            interface = i
             description = interfaces[interface]['description']
-            print(int, description)
+            print(interface, description)
     x = ''
     return x
 

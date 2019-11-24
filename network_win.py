@@ -81,10 +81,10 @@ def get_interface_name(ip, username, password):
         displaybox.insert(END, f'Connecting to {ip}\n')
         interfaces = device.get_interfaces()
         displaybox.insert(END, '-' * 80 + '\n')
-        for interface in interfaces:
-            int = interface
+        for i in interfaces:
+            interface = i
             description = interfaces[interface]['description']
-            displaybox.insert(END, int, description, '\n')
+            displaybox.insert(END, interface, description)
 
 
 def port_security(ip, username, password):
@@ -123,7 +123,7 @@ menu_lable.grid(row=0, column=2, sticky=E+W)
 
 device_info = Button(app, text="Get Device Info", font=('bold', 11), pady=5)
 device_info.bind('<Button-1>', lambda event:
-                 get_info('192.168.222.131',
+                 get_info('10.0.0.123',
                           'jnieves',
                           'johnny'
                           ))
@@ -132,13 +132,13 @@ device_info.grid(row=2, column=1, sticky=E+W, )
 
 ios_ver_button = Button(app, text="Get IOS Version", font=('bold', 11), pady=5)
 ios_ver_button.bind(
-    '<Button-1>', lambda event: get_ios_version('192.168.222.131', 'jnieves', 'johnny'))
+    '<Button-1>', lambda event: get_ios_version('10.0.0.123', 'jnieves', 'johnny'))
 ios_ver_button.grid(row=2, column=2, sticky=E+W)
 
 
 upgrade = Button(app, text="IOS Upgrade", font=('bold', 11), pady=5)
 upgrade.bind('<Button-1>', lambda event:
-             ios_upgrade('192.168.222.131',
+             ios_upgrade('10.0.0.123',
                          'jnieves',
                          'johnny'
                          ))
@@ -148,7 +148,7 @@ upgrade.grid(row=2, column=3, sticky=E+W)
 link_stat = Button(app, text="Check Link Status",
                    font=('bold', 11), pady=5)
 link_stat.bind('<Button-1>', lambda event:
-               link_status('192.168.222.131',
+               link_status('10.0.0.123',
                            'jnieves',
                            'johnny'
                            ))
@@ -157,7 +157,7 @@ link_stat.grid(row=3, column=1, sticky=E+W)
 port_security = Button(app, text="Check Port-Security: Switches Only",
                        font=('bold', 11), pady=5)
 port_security.bind('<Button-1>', lambda event:
-                   port_security('192.168.222.131',
+                   port_security('10.0.0.123',
                                  'jnieves',
                                  'johnny'
                                  ))
@@ -166,7 +166,7 @@ port_security.grid(row=3, column=2, sticky=E+W)
 int_desc = Button(
     app, text="Check Interface Descriptions", font=('bold', 11), pady=5)
 int_desc.bind('<Button-1>', lambda event:
-              get_interface_name('192.168.222.131',
+              get_interface_name('10.0.0.123',
                                  'jnieves',
                                  'johnny'
                                  ))
