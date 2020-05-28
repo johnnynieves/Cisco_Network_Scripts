@@ -17,7 +17,7 @@ class Device:
 
     def connect(self):
         get_network_driver(self.vendor)
-        driver = get_network_driver(self.vendor).get_facts()
+        driver = get_network_driver(self.vendor)
         device = driver(self.ip, self.username, self.password)
         device.open()
 
@@ -54,7 +54,11 @@ class Device:
         driver = get_network_driver(self.vendor)
         device = driver(self.ip, self.username, self.password)
         device.open()
-        return pprint(device.get_config())
+        return pprint(device.get_config(
+                                        retrieve='running',
+                                        full= False,
+                                        )
+                    )
 
     def get_environment(self):
         get_network_driver(self.vendor)
