@@ -3,7 +3,7 @@ from napalm.base.exceptions import ConnectionException
 from getpass import getpass
 from netmiko import NetMikoAuthenticationException
 from pprint import pprint
-
+from os import system
 
 # ip = '192.168.122.250'#input("Please enter your ip: ")
 #username = 'jnieves'#input("Please enter your Username: ")#
@@ -17,7 +17,7 @@ def get_info(ip, username, password):
         info = device.get_facts()
         print('-' * 80)
         ios = info['os_version']
-        hostname = info['hostname']
+        hostname = info['hostname'] 
         vendor = info['vendor']
         model = info['model']
         serial = info['serial_number']
@@ -33,14 +33,13 @@ Your device has these interfaces {interface} \n''')
 
 def get_ios_version(ip, username, password):
     with driver(ip, username, password) as device:
-        x = ''
         print(f'\nConnecting to {ip}')
         info = device.get_facts()
         print('-' * 80)
         trans = info['os_version'].split(',')[1]
         ios = trans.split(' ')[3]
         print(f'Your IOS version is {ios}')
-        return x
+
 
 
 def link_status(ip, username, password):
@@ -61,8 +60,6 @@ def link_status(ip, username, password):
         print(f'\nYou have {interface_port} port(s) CONNECTED')
         print(f'You have {down} port(s) in NOTCONNECT or DISABLED')
         print(f'Total number of port(s) {all_interfaces}\n')
-        x = ''
-        return x
 
 
 def get_interface_name(ip, username, password):
@@ -74,8 +71,6 @@ def get_interface_name(ip, username, password):
             interface = i
             description = interfaces[interface]['description']
             print(interface, description)
-    x = ''
-    return x
 
 
 def port_security(ip, username, password):
@@ -89,7 +84,6 @@ def port_security(ip, username, password):
 
 def check_ios(ip, username, password):
     with driver(ip, username, password) as device:
-        x = ''
         print(f'Connecting to {ip}')
         print('-' * 80)
         info = device.get_facts()
@@ -102,19 +96,17 @@ def check_ios(ip, username, password):
             print('You may need to update your ios. ')
         if ios_current is ios_new:
             print(f'Your ios {ios_current} is compliant.')
-        return x
 
 
 def ios_upgrade(ip, username, password):
     with driver(ip, username, password) as device:
-        x = ''
         print(f'\nConnecting to {ip}')
         print('-' * 80)
 
         update = input('Would you like to update your ios [Y/N] \n')
         if update.upper() == 'N':
             print('logging off...')
-            return x
+
         elif update.upper() == 'Y':
             print('Updating...')
             location = input('What is your tftp/scp server [x.x.x.x] \n')
@@ -145,7 +137,7 @@ def ios_upgrade(ip, username, password):
                 device.device.send_config_set(['do reload in ' + when, 'y'])
                 print(f'\nRestarting in {when} [HH:MM]\n')
                 print('Exiting')
-    return x
+    
 
 
 def make_golden_configs(ip, username, password):
@@ -183,7 +175,7 @@ def verify_configs(ip, username, password):
 
 
 def menu():
-    x = ''
+    system('clear')
     print('*' * 80)
     print('*', ' ' * 30, ' Network Tools ', ' ' * 29, '*')
     print('*' * 80)
@@ -213,6 +205,7 @@ def menu():
         password = getpass('Please enter your password \n')
         get_info(ip, username, password)
         input('Press enter to continue\n')
+        system('clear')
         menu()
 
     elif tool == 2:
@@ -221,6 +214,7 @@ def menu():
         password = getpass('Please enter your password \n')
         get_ios_version(ip, username, password)
         input('Press enter to continue\n')
+        system('clear')
         menu()
 
     elif tool == 3:
@@ -229,6 +223,7 @@ def menu():
         password = getpass('Please enter your password \n')
         ios_upgrade(ip, username, password)
         input('Press enter to continue\n')
+        system('clear')
         menu()
 
     elif tool == 4:
@@ -237,6 +232,7 @@ def menu():
         password = getpass('Please enter your password \n')
         link_status(ip, username, password)
         input('Press enter to continue\n')
+        system('clear')
         menu()
 
     elif tool == 5:
@@ -245,6 +241,7 @@ def menu():
         password = getpass('Please enter your password \n')
         port_security(ip, username, password)
         input('Press enter to continue\n')
+        system('clear')
         menu()
 
     elif tool == 6:
@@ -253,6 +250,7 @@ def menu():
         password = getpass('Please enter your password \n')
         get_interface_name(ip, username, password)
         input('Press enter to continue\n')
+        system('clear')
         menu()
 
     elif tool == 7:
@@ -261,6 +259,7 @@ def menu():
         password = getpass('Please enter your password \n')
         make_golden_configs(ip, username, password)
         input('Press enter to continue\n')
+        system('clear')
         menu()
 
     elif tool == 8:
@@ -269,12 +268,13 @@ def menu():
         password = getpass('Please enter your password \n')
         verify_configs(ip, username, password)
         input('Press enter to continue\n')
+        system('clear')
         menu()
 
     else:
         print('Good Bye')
         exit()
-    return x
+
 
 
 if __name__ == "__main__":
