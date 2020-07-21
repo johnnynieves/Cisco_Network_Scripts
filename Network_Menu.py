@@ -174,6 +174,33 @@ def verify_configs(ip, username, password):
             print('Your running configs DO NOT match the golden configs')
 
 
+def enable_portfast(ip, username, password):
+    network = input('Example 10.231.27.' )
+    subnetmin = input('Example Subnet range starts at 1 ')
+    subnetmax = input('Example Subnet range ends at 28 ')
+
+    for sw in range(subnetmin, subnetmax):
+        try:
+            ip = network + str(sw)
+            device = driver(ip, username, password)
+            device.open()
+            print(f'\nConnecting to {ip}')
+            print('-' * 80 + '\n')
+            data = device.get_interfaces()
+            for i in data:
+                if i[0] == 'G' and data[i]['is_up'] == True and data[i]['is_enabled'] == True:
+                    print(device.device.send_config_set(
+                        ['interface ' + i, 'spanning-tree portfast edge', 'end']))
+            print(device.device.send_command('wr'))
+
+        except NetMikoAuthenticationException:
+            print('Auth Error for ', ip)
+
+        except ConnectionException:
+            print('Could not connect to ', ip)
+    device.close()
+
+
 def menu():
     system('clear')
     print('*' * 80)
@@ -193,6 +220,7 @@ def menu():
     print('6. Check Interface Names')
     print('7. Make "Golden" Configs')
     print('8. Verify configs against "Golden" configs')
+    print('9. Enable Portfast')
     print('0. to quit')
     print()
     print('*' * 80)
@@ -263,6 +291,15 @@ def menu():
         menu()
 
     elif tool == 8:
+        ip = input('Please enter your IP x.x.x.x \n')
+        username = input('Please enter your username \n')
+        password = getpass('Please enter your password \n')
+        verify_configs(ip, username, password)
+        input('Press enter to continue\n')
+        system('clear')
+        menu()
+
+    elif tool == 9:
         ip = input('Please enter your IP x.x.x.x \n')
         username = input('Please enter your username \n')
         password = getpass('Please enter your password \n')

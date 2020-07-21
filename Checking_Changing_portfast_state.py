@@ -18,7 +18,7 @@ def main():
     print()
     print('Please Select a tool')
     print()
-    print('1. List Enabled Ports')
+    print('1. List Enabled Ports') 
     print('2. Enable portfast on ports in list')
     print('0. to quit')
     print()
