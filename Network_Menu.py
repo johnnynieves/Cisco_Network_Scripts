@@ -2,12 +2,11 @@ from napalm import get_network_driver
 from napalm.base.exceptions import ConnectionException
 from getpass import getpass
 from netmiko import NetMikoAuthenticationException
-from pprint import pprint
 from os import system
 
 # ip = '192.168.122.250'#input("Please enter your ip: ")
-#username = 'jnieves'#input("Please enter your Username: ")#
-#password = 'johnny'#getpass("Please enter your Password: ")#
+# username = 'jnieves'#input("Please enter your Username: ")#
+# password = 'johnny'#getpass("Please enter your Password: ")#
 driver = get_network_driver('ios')
 
 
@@ -17,16 +16,17 @@ def get_info(ip, username, password):
         info = device.get_facts()
         print('-' * 80)
         ios = info['os_version']
-        hostname = info['hostname'] 
+        hostname = info['hostname']
         vendor = info['vendor']
         model = info['model']
         serial = info['serial_number']
         interface = 0
         for i in info['interface_list']:
             interface += 1
-        print(f'''\nYour device's name is {hostname}.\nIt is made by {vendor} and is a {model}.\n
-It's serial number is {serial}.\nThe version of ios is\n{ios}\n
-Your device has these interfaces {interface} \n''')
+        print(f'''\nYour device's name is {hostname}.\n
+        It is made by {vendor} and is a {model}.\n
+        It's serial number is {serial}.\nThe version of ios is\n{ios}\n
+        Your device has these interfaces {interface} \n''')
         print('-' * 80, '\n')
     return hostname, vendor, model, serial, ios, interface
 
@@ -41,7 +41,6 @@ def get_ios_version(ip, username, password):
         print(f'Your IOS version is {ios}')
 
 
-
 def link_status(ip, username, password):
     with driver(ip, username, password) as device:
         print(f'Connecting to {ip}')
@@ -49,9 +48,12 @@ def link_status(ip, username, password):
         print('-' * 80)
         down = 0
         up = 0
-        print('The following port(s) are not connected to a device or is(are) Disabled:\n')
+        print('The following port(s) are not connected to a device or is(are)')
+        print('Disabled:')
         for interface in status:
-            if status[interface]['is_up'] == False or status[interface]['is_enabled'] == False:
+            if not status[interface]['is_up'] or not status[interface][
+                'is_enabled'
+            ]:
                 print(interface)
                 down += 1
             up += 1
@@ -90,7 +92,7 @@ def check_ios(ip, username, password):
         ios_trans = info['os_version'].split(',')[1]
         ios_current = ios_trans.split()[1]
         ios_new = input(
-            '\nPlease enter ios version to for check compliance Example(X.X.X): ')
+            '\nEnter ios version to for check compliance Example(X.X.X): ')
         print(f'Your current ios is {ios_current}.')
         if ios_current != ios_new:
             print('You may need to update your ios. ')
@@ -112,7 +114,8 @@ def ios_upgrade(ip, username, password):
             location = input('What is your tftp/scp server [x.x.x.x] \n')
             source = input('What is your IOS file name [c3750.info.bin] \n')
             destination = source
-            config_commands = ['do copy tftp://' + location + '/' + source + ' flash:',
+            config_commands = ['do copy tftp://' + location + '/' + source +
+                               ' flash:',
                                source,
                                destination]
             print(device.device.send_config_set(config_commands))
@@ -133,11 +136,11 @@ def ios_upgrade(ip, username, password):
                 print('Exiting')
             elif restart.upper() == 'Y':
                 when = input(
-                    'In how many [HH:MM] would you like to restart?\nNOTE: Time without a ":" will default to minutes: ')
+                    '''In how many [HH:MM] would you like to restart?\n
+                    NOTE: Time without a ":" will default to minutes: ''')
                 device.device.send_config_set(['do reload in ' + when, 'y'])
                 print(f'\nRestarting in {when} [HH:MM]\n')
                 print('Exiting')
-    
 
 
 def make_golden_configs(ip, username, password):
@@ -153,7 +156,8 @@ def make_golden_configs(ip, username, password):
 
         with open('Golden_Configs.txt', 'w') as f:
             f.write(golden_configs)
-        print('Your configs have been made and is located in root of where you ran this program.')
+        print('Your configs have been made')
+        print('File located in root of where you ran this program.')
 
 
 def verify_configs(ip, username, password):
@@ -175,7 +179,7 @@ def verify_configs(ip, username, password):
 
 
 def enable_portfast(ip, username, password):
-    network = input('Example 10.231.27.' )
+    network = input('Example 10.231.27.')
     subnetmin = input('Example Subnet range starts at 1 ')
     subnetmax = input('Example Subnet range ends at 28 ')
 
@@ -188,9 +192,14 @@ def enable_portfast(ip, username, password):
             print('-' * 80 + '\n')
             data = device.get_interfaces()
             for i in data:
-                if i[0] == 'G' and data[i]['is_up'] == True and data[i]['is_enabled'] == True:
-                    print(device.device.send_config_set(
-                        ['interface ' + i, 'spanning-tree portfast edge', 'end']))
+                if i[0] == 'G' and data[i]['is_up'] and data[i][
+                        'is_enabled']:
+                    print(device.device.send_config_set([
+                        'interface ' + i,
+                        'spanning-tree portfast edge',
+                        'end'
+                    ])
+                    )
             print(device.device.send_command('wr'))
 
         except NetMikoAuthenticationException:
@@ -311,7 +320,6 @@ def menu():
     else:
         print('Good Bye')
         exit()
-
 
 
 if __name__ == "__main__":
