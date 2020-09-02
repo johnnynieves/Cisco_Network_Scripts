@@ -84,6 +84,33 @@ def port_security(ip, username, password):
     print('-' * 80)
 
 
+def get_enclave_err_disabled():
+    username = input('Please enter your username \n')
+    password = getpass('Please enter your password \n')
+    network = input('Enter your subnet Example 10.231.27.: ')
+    minimal = input('Enter network address octet: ')
+    maximum = input('Enter broadcast address octet: ')
+
+    for switch in range(int(minimal), int(maximum)):
+        try:
+            ip = str(network) + str(switch)
+            device = driver(ip, username, password)
+            device.open()
+            print(f'\nConnecting to {ip}')
+            print('-' * 80 + '\n')
+            data = device.device.send_command('sh int status err-disabled')
+            f = open(f'{ip}_err_disable_ports.txt', 'w')
+            print('Your answers are in the current folder you ran this file from... \n')
+            f.close()
+            print()
+            device.close()
+        except NetMikoAuthenticationException:
+            print('Auth Error for ', ip)
+
+        except ConnectionException:
+            print('Could not connect to ', ip)
+
+
 def check_ios(ip, username, password):
     with driver(ip, username, password) as device:
         print(f'Connecting to {ip}')
@@ -221,15 +248,16 @@ def menu():
     print()
     print('Please Select a tool')
     print()
-    print('1. Get device info')
-    print('2. Get IOS Version')
-    print('3. IOS Upgrade')
-    print('4. Link status for your Device')
-    print('5. Check port-security')
-    print('6. Check Interface Names')
-    print('7. Make "Golden" Configs')
-    print('8. Verify configs against "Golden" configs')
-    print('9. Enable Portfast')
+    print('1.  Get device info')
+    print('2.  Get IOS Version')
+    print('3.  IOS Upgrade')
+    print('4.  Link status for your Device')
+    print('5.  Check port-security')
+    print('6.  Check Interface Names')
+    print('7.  Make "Golden" Configs')
+    print('8.  Verify configs against "Golden" configs')
+    print('9.  Enable Portfast')
+    print('10. Error Disabled ports accross the subnet\n')
     print('0. to quit')
     print()
     print('*' * 80)
@@ -313,6 +341,12 @@ def menu():
         username = input('Please enter your username \n')
         password = getpass('Please enter your password \n')
         verify_configs(ip, username, password)
+        input('Press enter to continue\n')
+        system('clear')
+        menu()
+
+    elif tool == 10:
+        get_enclave_err_disabled()
         input('Press enter to continue\n')
         system('clear')
         menu()
