@@ -10,7 +10,7 @@ driver = get_network_driver('ios')
 
 def creds():
     credentials = []
-    with open('/home/johnny/test.txt', 'r') as f:
+    with open('/home/johnny/creds', 'r') as f:
         credentials = f.read()
     credentials = credentials.strip("").splitlines()
     # print(credentials)
@@ -18,4 +18,4 @@ def creds():
 
 
 if __name__ == "__main__":
-    print(*creds())
+    creds()

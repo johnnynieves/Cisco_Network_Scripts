@@ -84,10 +84,19 @@ def port_security(ip, username, password):
     print('-' * 80)
 
 
+def creds():
+    credentials = []
+    with open('/home/johnny/creds', 'r') as f:
+        credentials = f.read()
+    credentials = credentials.strip("").splitlines()
+    # print(credentials)
+    return credentials
+
+
 def get_enclave_err_disabled():
-    username = input('Please enter your username \n')
-    password = getpass('Please enter your password \n')
-    network = input('Enter your subnet Example 10.231.27.: ')
+    username = creds()[0]  # input('Please enter your username \n')
+    password = creds()[1]  # getpass('Please enter your password \n')
+    network = input('Enter your subnet Example "10.231.27." ')
     minimal = input('Enter network address octet: ')
     maximum = input('Enter broadcast address octet: ')
 
@@ -99,7 +108,8 @@ def get_enclave_err_disabled():
             print(f'\nConnecting to {ip}')
             print('-' * 80 + '\n')
             data = device.device.send_command('sh int status err-disabled')
-            f = open(f'{ip}_err_disable_ports.txt', 'w')
+            with open(f'{ip}_err_disable_ports.txt', 'w') as f:
+                f.write(data)
             print('Your answers are in the current folder you ran this file from... \n')
             f.close()
             print()
