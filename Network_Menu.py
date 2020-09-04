@@ -103,12 +103,12 @@ def get_enclave_err_disabled():
     for switch in range(int(minimal), int(maximum)):
         try:
             ip = str(network) + str(switch)
-            device = driver(ip, username, password)
+            device = driver(ip, username, password, timeout=5)
             device.open()
             print(f'\nConnecting to {ip}')
             print('-' * 80 + '\n')
             data = device.device.send_command('sh int status err-disabled')
-            with open(f'{ip}_err_disable_ports.txt', 'w') as f:
+            with open(f'/home/johnny/err_disabled/{ip}_err_disable_ports.txt', 'w') as f:
                 f.write(data)
             print('Your answers are in the current folder you ran this file from... \n')
             f.close()

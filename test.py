@@ -1,6 +1,6 @@
 import smtplib
-import ssl
 import os
+from email.message import EmailMessage
 
 
 def creds():
@@ -10,22 +10,31 @@ def creds():
 
 
 def send_email_report():
-    email = 'network.site.manager@gmail.com'
-    password = ''
+    email = creds()[2]
+    password = creds()[3]
+    directory = '/home/johnny/err_disabled/'
+    if not directory:
+        os.makedirs(directory)
 
-    with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-        smtp.ehlo()
-        smtp.starttls()
-        smtp.ehlo()
+    msg = EmailMessage()
+    msg['Subject'] = 'Your Reports Check it out!!'
+    msg['From'] = email
+    msg['To'] = email
+    msg.set_content('Check you what interfaces are err-disabled')
 
+    with open(directory, 'rb') as f:
+        file_data = f.read()
+        file_type = 'txt'
+    # attachments = ['this will be a search in the directory']
+    msg.add_attachment(file_data, maintype)
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
         smtp.login(email, password)
+        smtp.send_message(msg)
+    print('Email Sent')
 
-        subject = 'Network Reports'
-        body = ' A bunch of reports you need to look at'
 
-        msg = f'Subject: {subject}\n\n{body}'
-
-        smtp.sendmail('network.site.manager', 'johnny0nieves@gmail.com', msg)
+def check_files():
+    pass
 
 
 if __name__ == "__main__":
