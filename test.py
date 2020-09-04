@@ -1,21 +1,32 @@
-from napalm import get_network_driver
-from napalm.base.exceptions import ConnectionException
-from getpass import getpass
-from netmiko import NetMikoAuthenticationException
-from pprint import pprint
+import smtplib
+import ssl
 import os
-
-driver = get_network_driver('ios')
 
 
 def creds():
-    credentials = []
-    with open('/home/johnny/creds', 'r') as f:
+    with open('/home/johnny/creds') as f:
         credentials = f.read()
-    credentials = credentials.strip("").splitlines()
-    # print(credentials)
-    return credentials
+    return credentials.splitlines()
+
+
+def send_email_report():
+    email = 'network.site.manager@gmail.com'
+    password = '1Backie22Wacky!!1'
+
+    with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.ehlo()
+
+        smtp.login(email, password)
+
+        subject = 'Network Reports'
+        body = ' A bunch of reports you need to look at'
+
+        msg = f'Subject: {subject}\n\n{body}'
+
+        smtp.sendmail('network.site.manager', 'johnny0nieves@gmail.com', msg)
 
 
 if __name__ == "__main__":
-    creds()
+    send_email_report()
