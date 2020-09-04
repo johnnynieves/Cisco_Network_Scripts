@@ -11,7 +11,7 @@ def creds():
 
 def send_email_report():
     email = 'network.site.manager@gmail.com'
-    password = '1Backie22Wacky!!1'
+    password = ''
 
     with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
         smtp.ehlo()
