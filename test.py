@@ -13,8 +13,6 @@ def send_email_report():
     email = creds()[2]
     password = creds()[3]
     directory = '/home/johnny/err_disabled/'
-    if not directory:
-        os.makedirs(directory)
 
     msg = EmailMessage()
     msg['Subject'] = 'Your Reports Check it out!!'
@@ -25,6 +23,7 @@ def send_email_report():
     with open(directory, 'rb') as f:
         file_data = f.read()
         file_type = 'txt'
+
     # attachments = ['this will be a search in the directory']
     msg.add_attachment(file_data, maintype)
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
@@ -39,3 +38,4 @@ def check_files():
 
 if __name__ == "__main__":
     send_email_report()
+  
