@@ -1,5 +1,4 @@
 from napalm import get_network_driver
-from pprint import pprint
 
 
 class Device:
