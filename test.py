@@ -1,48 +1,51 @@
-import smtplib
-import os
-from email.message import EmailMessage
+from napalm import get_network_driver
+from napalm.base.exceptions import ConnectionException
+from getpass import getpass
+from netmiko import NetMikoAuthenticationException
+from os import system
 
 
-def creds():
-    with open('/home/johnny/creds') as f:
-        credentials = f.read()
-    return credentials.splitlines()
+driver = get_network_driver('ios')
 
 
-def send_email_report():
-    email = creds()[2]
-    password = creds()[3]
-    directory = '/home/johnny/err_disabled/test'
+def tftp_ios():
+    network = input('Enter your subnet Example "10.231.27." ')
+    minimal = input('Enter network address octet: ')
+    maximum = input('Enter broadcast address octet: ')
+    username = creds()[0]  # input('Please enter your username \n')
+    password = creds()[1]  # getpass('Please enter your password \n')
 
-    msg = EmailMessage()
-    msg['Subject'] = 'Your Reports Check it out!!'
-    msg['From'] = email
-    # Can add a list for more individuals
-    msg['To'] = 'johnny0nieves@gmail.com'
-    msg.set_content('Check you what interfaces are err-disabled')
+    for switch in range(int(minimal), int(maximum)):
+        try:
+            ip = str(network) + str(switch)
+            device = driver(ip, username, password, timeout=5)
+            device.open()
+            print(f'\nConnecting to {ip}')
+            print('-' * 80 + '\n')
+            tftpServer = input(
+                "Please enter your tftp server address x.x.x.x: ")
+            ios = input("Whats is your ios name: ")
+            data = device.device.send_config_set([
+                f"do copy tftp://{tftpServer}/{ios} flash:{ios}",
+                " "
+            ])
+            print()
+            print(device.device.send_command("dir | i .bin"))
+            print()
+            print(device.device.send_config_set([
+                "no boot system switch all",
+                f"boot system switch all flash:{ios}",
+                "do wr",
+                "Backie22Wacky!!",
+                "do sh run | i boot"
+            ]))
+            device.close()
+        except NetMikoAuthenticationException:
+            print('Auth Error for ', ip)
 
-    with open(directory, 'rb') as f:
-        file_data = f.read()
-        # file_type = 'image' only use for sending an image |
-        file_type = 'octet-stream'
-        file_name = directory.split('/')[4]  # gets the name of file only
-
-    # attachments = ['this will be a search in the directory']
-    msg.add_attachment(
-        file_data,
-        maintype='application',
-        subtype=file_type,
-        filename=file_name
-    )
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login(email, password)
-        smtp.send_message(msg)
-    print('Email Sent')
-
-
-def check_files():
-    pass
+        except ConnectionException:
+            print('Could not connect to ', ip)
 
 
 if __name__ == "__main__":
-    send_email_report()
+    tftp_ios()
