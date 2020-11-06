@@ -248,12 +248,15 @@ def enable_portfast(ip, username, password):
 
 
 def tftp_ios():
-    network = input('Enter your subnet Example "10.231.27." ')
-    minimal = input('Enter network address octet: ')
-    maximum = input('Enter broadcast address octet: ')
+    network = "10.231.27."  # input('Enter your subnet Example "10.231.27." ')
+    minimal = "8"  # input('Enter network beginning host octet: ')
+    maximum = "36"  # input(
+    # 'Enter broadcast address octet or\nEnter your last host octet: ')
     username = creds()[0]  # input('Please enter your username \n')
     password = creds()[1]  # getpass('Please enter your password \n')
-
+    tftpServer = "164.248.27.71"  # input(
+    # "Please enter your tftp server address x.x.x.x: ")
+    ios = "catuniversalk9whatever.bin"  # input("Whats is your ios name: ")
     for switch in range(int(minimal), int(maximum)):
         try:
             ip = str(network) + str(switch)
@@ -261,23 +264,30 @@ def tftp_ios():
             device.open()
             print(f'\nConnecting to {ip}')
             print('-' * 80 + '\n')
-            tftpServer = input(
-                "Please enter your tftp server address x.x.x.x: ")
-            ios = input("Whats is your ios name: ")
-            data = device.device.send_config_set([
+            print('Connected')
+
+            print('< >' * 25 + '\n')
+            print(device.device.send_config_set([
                 f"do copy tftp://{tftpServer}/{ios} flash:{ios}",
-                " "
-            ])
-            print()
-            print(device.device.send_command("dir | i .bin"))
+                f"{ios}",
+                "\n"  # jumps over file exist
+            ]))
             print()
             print(device.device.send_config_set([
+                "do dir | i .bin",
                 "no boot system switch all",
                 f"boot system switch all flash:{ios}",
+                "do sh boot",
                 "do wr",
-                "Backie22Wacky!!",
-                "do sh run | i boot"
+                "",  # switch password
+
             ]))
+            print('< >' * 25 + '\n')
+
+            print()
+            print(f"Disconnecting from {ip}")
+            print('-' * 80 + '\n')
+
             device.close()
         except NetMikoAuthenticationException:
             print('Auth Error for ', ip)
