@@ -254,9 +254,9 @@ def tftp_ios():
     # 'Enter broadcast address octet or\nEnter your last host octet: ')
     username = creds()[0]  # input('Please enter your username \n')
     password = creds()[1]  # getpass('Please enter your password \n')
-    tftpServer = "164.248.27.71"  # input(
+    tftpServer = "168.248.27.71"  # input(
     # "Please enter your tftp server address x.x.x.x: ")
-    ios = "catuniversalk9whatever.bin"  # input("Whats is your ios name: ")
+    ios = "c3750_test.bin"  # input("Whats is your ios name: ")
     for switch in range(int(minimal), int(maximum)):
         try:
             ip = str(network) + str(switch)
@@ -266,12 +266,33 @@ def tftp_ios():
             print('-' * 80 + '\n')
             print('Connected')
 
+            '''
+            Had to modify the below in Netmiko cisco base connection.py due to 
+            tftp timingout.
+            File "/usr/local/lib/python3.8/dist-packages/netmiko/base_connection.py", line 1620
+            to open in vscode use the below
+            sudo code /usr/local/lib/python3.8/dist-packages/netmiko/base_connection.py  --user-data-dir
+            
+            - My Change
+            delay_factor=100,
+            max_loops=1000,
+            strip_prompt=False,
+            strip_command=False,
+            config_mode_command=None
+            
+            I changed these variables
+            for tftp timing out
+            delay_factor=1, Original
+            max_loops=150, Original
+            '''
+
             print('< >' * 25 + '\n')
             print(device.device.send_config_set([
                 f"do copy tftp://{tftpServer}/{ios} flash:{ios}",
                 f"{ios}",
-                "\n"  # jumps over file exist
+                " "
             ]))
+
             print()
             print(device.device.send_config_set([
                 "do dir | i .bin",
