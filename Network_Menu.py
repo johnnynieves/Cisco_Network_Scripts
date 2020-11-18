@@ -4,69 +4,116 @@ from getpass import getpass
 from netmiko import NetMikoAuthenticationException
 from os import system
 
-# ip = '192.168.122.250'#input("Please enter your ip: ")
-# username = 'jnieves'#input("Please enter your Username: ")#
-# password = 'johnny'#getpass("Please enter your Password: ")#
 driver = get_network_driver('ios')
 
 
-def get_info(ip, username, password):
-    with driver(ip, username, password) as device:
+def get_driver_info():
+    network = input('Enter your subnet Example "10.231.27." ')
+    minimal = input(
+        '''
+For entire subnet use enter network first host octet:
+If using for a single host enter last octet of host:
+''')
+    maximum = input(
+        '''
+For entire subnet use enter network last host octet:
+If using for a single host enter last octet of host:
+''')
+    driver_info = [network, minimal, maximum]
+    return driver_info
+
+
+def get_info():
+    driver_info = get_driver_info()
+    for i in range(int(driver_info[1]), int(driver_info[2])+1):
+        ip = driver_info[0] + str(i)
+        device = driver(ip, creds()[0], creds()[1])
         print(f'\nConnecting to {ip}')
+        device.open()
         info = device.get_facts()
         print('-' * 80)
         ios = info['os_version']
         hostname = info['hostname']
         vendor = info['vendor']
+
         model = info['model']
         serial = info['serial_number']
         interface = 0
+        sfp = 0
         for i in info['interface_list']:
-            interface += 1
-        print(f'''\nYour device's name is {hostname}.\n
-        It is made by {vendor} and is a {model}.\n
-        It's serial number is {serial}.\nThe version of ios is\n{ios}\n
-        Your device has these interfaces {interface} \n''')
+            if i[0:18] == "GigabitEthernet1/0":
+                interface += 1
+            elif i[0:18] == "GigabitEthernet1/1" or i[0:4] == "Te1/1":
+                sfp += 1
+        print(f'''
+Your device's name is {hostname}.
+It is made by {vendor} and is a {model}.
+It's serial number is {serial}.
+The version of ios is {ios}
+Your device has {interface} interfaces and {sfp} SFP.
+        ''')
         print('-' * 80, '\n')
-    return hostname, vendor, model, serial, ios, interface
 
 
-def get_ios_version(ip, username, password):
-    with driver(ip, username, password) as device:
-        print(f'\nConnecting to {ip}')
+def get_ios_version():
+    driver_info = get_driver_info()
+    for i in range(int(driver_info[1]), int(driver_info[2])+1):
+        ip = driver_info[0] + str(i)
+        device = driver(ip, creds()[0], creds()[1])
+        print(f'\nConnecting to {ip}\n')
+        device.open()
         info = device.get_facts()
         print('-' * 80)
-        trans = info['os_version'].split(',')[1]
-        ios = trans.split(' ')[3]
+        ios = info['os_version'].split(',')[1]
         print(f'Your IOS version is {ios}')
 
 
-def link_status(ip, username, password):
-    with driver(ip, username, password) as device:
-        print(f'Connecting to {ip}')
+def link_status():
+    driver_info = get_driver_info()
+    for i in range(int(driver_info[1]), int(driver_info[2])+1):
+        ip = driver_info[0] + str(i)
+        device = driver(ip, creds()[0], creds()[1])
+        print(f'\nConnecting to {ip}')
+        device.open()
         status = device.get_interfaces()
         print('-' * 80)
         down = 0
         up = 0
-        print('The following port(s) are not connected to a device or is(are)')
-        print('Disabled:')
+        print('The following port(s) are connected to a device\n')
+        print('Enabled:')
+
         for interface in status:
-            if not status[interface]['is_up'] or not status[interface][
-                'is_enabled'
-            ]:
-                print(interface)
+            if interface[0] == "V":
+                up = up
+                down = down
+
+            elif status[interface]['is_up'] and status[interface]['is_enabled']:
+                print(interface, status[interface]['description'])
+                up += 1
+
+            elif status[interface]['is_up'] and not status[interface]['is_enabled']:
                 down += 1
-            up += 1
-        all_interfaces = up
-        interface_port = up - down
-        print(f'\nYou have {interface_port} port(s) CONNECTED')
-        print(f'You have {down} port(s) in NOTCONNECT or DISABLED')
-        print(f'Total number of port(s) {all_interfaces}\n')
+
+            elif not status[interface]['is_up'] and not status[interface]['is_enabled']:
+                down += 1
+
+            else:
+                down += 1
+
+        all_interfaces = up + down
+        interface_port = down - up
+        print(f'\nYou have {interface_port} port(s) NOTCONNECT or DISABLED')
+        print(f'You have {up} port(s) in a CONNECT state')
+        print(f'Total number of physical port(s) {all_interfaces}\n')
 
 
-def get_interface_name(ip, username, password):
-    with driver(ip, username, password) as device:
-        print(f'Connecting to {ip}')
+def get_interface_name():
+    driver_info = get_driver_info()
+    for i in range(int(driver_info[1]), int(driver_info[2])+1):
+        ip = driver_info[0] + str(i)
+        device = driver(ip, creds()[0], creds()[1])
+        print(f'\nConnecting to {ip}')
+        device.open()
         interfaces = device.get_interfaces()
         print('-' * 80)
         for i in interfaces:
@@ -75,9 +122,13 @@ def get_interface_name(ip, username, password):
             print(interface, description)
 
 
-def port_security(ip, username, password):
-    with driver(ip, username, password) as device:
-        print(f'Connecting to {ip}\n')
+def port_security():
+    driver_info = get_driver_info()
+    for i in range(int(driver_info[1]), int(driver_info[2])+1):
+        ip = driver_info[0] + str(i)
+        device = driver(ip, creds()[0], creds()[1])
+        print(f'\nConnecting to {ip}')
+        device.open()
         print('-' * 80)
         print('The following port(s) have tripped port-security \n')
         print(device.device.send_command('sh int status err-disabled'))
@@ -93,37 +144,13 @@ def creds():
     return credentials
 
 
-def get_enclave_err_disabled():
-    username = creds()[0]  # input('Please enter your username \n')
-    password = creds()[1]  # getpass('Please enter your password \n')
-    network = input('Enter your subnet Example "10.231.27." ')
-    minimal = input('Enter network address octet: ')
-    maximum = input('Enter broadcast address octet: ')
-
-    for switch in range(int(minimal), int(maximum)):
-        try:
-            ip = str(network) + str(switch)
-            device = driver(ip, username, password, timeout=5)
-            device.open()
-            print(f'\nConnecting to {ip}')
-            print('-' * 80 + '\n')
-            data = device.device.send_command('sh int status err-disabled')
-            with open(f'/home/johnny/err_disabled/{ip}_err_disable_ports.txt', 'w') as f:
-                f.write(data)
-            print('Your answers are in the current folder you ran this file from... \n')
-            f.close()
-            print()
-            device.close()
-        except NetMikoAuthenticationException:
-            print('Auth Error for ', ip)
-
-        except ConnectionException:
-            print('Could not connect to ', ip)
-
-
-def check_ios(ip, username, password):
-    with driver(ip, username, password) as device:
-        print(f'Connecting to {ip}')
+def check_ios():
+    driver_info = get_driver_info()
+    for i in range(int(driver_info[1]), int(driver_info[2])+1):
+        ip = driver_info[0] + str(i)
+        device = driver(ip, creds()[0], creds()[1])
+        print(f'\nConnecting to {ip}')
+        device.open()
         print('-' * 80)
         info = device.get_facts()
         ios_trans = info['os_version'].split(',')[1]
@@ -133,51 +160,8 @@ def check_ios(ip, username, password):
         print(f'Your current ios is {ios_current}.')
         if ios_current != ios_new:
             print('You may need to update your ios. ')
-        if ios_current is ios_new:
+        if ios_current == ios_new:
             print(f'Your ios {ios_current} is compliant.')
-
-
-def ios_upgrade(ip, username, password):
-    with driver(ip, username, password) as device:
-        print(f'\nConnecting to {ip}')
-        print('-' * 80)
-
-        update = input('Would you like to update your ios [Y/N] \n')
-        if update.upper() == 'N':
-            print('logging off...')
-
-        elif update.upper() == 'Y':
-            print('Updating...')
-            location = input('What is your tftp/scp server [x.x.x.x] \n')
-            source = input('What is your IOS file name [c3750.info.bin] \n')
-            destination = source
-            config_commands = ['do copy tftp://' + location + '/' + source +
-                               ' flash:',
-                               source,
-                               destination]
-            print(device.device.send_config_set(config_commands))
-            print('\nFile Copied')
-            print('-' * 80)
-
-            set_ios = input(
-                '\nWould you like to default to new IOS at startup [Y/N] ')
-            if set_ios.upper() == 'N':
-                print('Note: You will have to set the IOS at your convinence')
-            elif set_ios.upper() == 'Y':
-                device.device.send_config_set(['boot system flash:' + source])
-                print('Exiting')
-            print('-' * 80)
-
-            restart = input('\nWould you like to restart [Y/N] ')
-            if restart.upper() == 'N':
-                print('Exiting')
-            elif restart.upper() == 'Y':
-                when = input(
-                    '''In how many [HH:MM] would you like to restart?\n
-                    NOTE: Time without a ":" will default to minutes: ''')
-                device.device.send_config_set(['do reload in ' + when, 'y'])
-                print(f'\nRestarting in {when} [HH:MM]\n')
-                print('Exiting')
 
 
 def make_golden_configs(ip, username, password):
@@ -337,7 +321,7 @@ def menu():
     print('7.  Make "Golden" Configs')
     print('8.  Verify configs against "Golden" configs')
     print('9.  Enable Portfast')
-    print('10. Error Disabled ports accross the subnet\n')
+    print('10. Check ios version compliance\n')
     print('0. to quit')
     print()
     print('*' * 80)
@@ -345,19 +329,13 @@ def menu():
     tool = int(input('Enter your selection '))
 
     if tool == 1:
-        ip = input('Please enter your IP x.x.x.x \n')
-        username = input('Please enter your username \n')
-        password = getpass('Please enter your password \n')
-        get_info(ip, username, password)
+        get_info()
         input('Press enter to continue\n')
         system('clear')
         menu()
 
     elif tool == 2:
-        ip = input('Please enter your IP x.x.x.x \n')
-        username = input('Please enter your username \n')
-        password = getpass('Please enter your password \n')
-        get_ios_version(ip, username, password)
+        get_ios_version()
         input('Press enter to continue\n')
         system('clear')
         menu()
@@ -376,28 +354,19 @@ def menu():
         # menu()
 
     elif tool == 4:
-        ip = input('Please enter your IP x.x.x.x \n')
-        username = input('Please enter your username \n')
-        password = getpass('Please enter your password \n')
-        link_status(ip, username, password)
+        link_status()
         input('Press enter to continue\n')
         system('clear')
         menu()
 
     elif tool == 5:
-        ip = input('Please enter your IP x.x.x.x \n')
-        username = input('Please enter your username \n')
-        password = getpass('Please enter your password \n')
-        port_security(ip, username, password)
+        port_security()
         input('Press enter to continue\n')
         system('clear')
         menu()
 
     elif tool == 6:
-        ip = input('Please enter your IP x.x.x.x \n')
-        username = input('Please enter your username \n')
-        password = getpass('Please enter your password \n')
-        get_interface_name(ip, username, password)
+        get_interface_name()
         input('Press enter to continue\n')
         system('clear')
         menu()
@@ -430,7 +399,7 @@ def menu():
         menu()
 
     elif tool == 10:
-        get_enclave_err_disabled()
+        check_ios()
         input('Press enter to continue\n')
         system('clear')
         menu()
