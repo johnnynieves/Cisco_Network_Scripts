@@ -139,7 +139,8 @@ def get_interface_name():
             for i in interfaces:
                 interface = i
                 description = interfaces[interface]['description']
-                print(interface, description)
+                mac = interfaces[interface]['mac_address']
+                print(interface, description, mac)
         except NetMikoAuthenticationException:
             print('Auth Error for ', ip)
 
