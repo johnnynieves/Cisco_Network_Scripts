@@ -26,113 +26,144 @@ If using for a single host enter last octet of host:
 def get_info():
     driver_info = get_driver_info()
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
-        ip = driver_info[0] + str(i)
-        device = driver(ip, creds()[0], creds()[1])
-        print(f'\nConnecting to {ip}')
-        device.open()
-        info = device.get_facts()
-        print('-' * 80)
-        ios = info['os_version']
-        hostname = info['hostname']
-        vendor = info['vendor']
+        try:
+            ip = driver_info[0] + str(i)
+            device = driver(ip, creds()[0], creds()[1])
+            print(f'\nConnecting to {ip}')
+            device.open()
+            info = device.get_facts()
+            print('-' * 80)
+            ios = info['os_version']
+            hostname = info['hostname']
+            vendor = info['vendor']
 
-        model = info['model']
-        serial = info['serial_number']
-        interface = 0
-        sfp = 0
-        for i in info['interface_list']:
-            if i[0:18] == "GigabitEthernet1/0":
-                interface += 1
-            elif i[0:18] == "GigabitEthernet1/1" or i[0:4] == "Te1/1":
-                sfp += 1
-        print(f'''
+            model = info['model']
+            serial = info['serial_number']
+            interface = 0
+            sfp = 0
+            for i in info['interface_list']:
+                if i[0:18] == "GigabitEthernet1/0":
+                    interface += 1
+                elif i[0:18] == "GigabitEthernet1/1" or i[0:4] == "Te1/1":
+                    sfp += 1
+            print(f'''
 Your device's name is {hostname}.
 It is made by {vendor} and is a {model}.
 It's serial number is {serial}.
 The version of ios is {ios}
 Your device has {interface} interfaces and {sfp} SFP.
         ''')
-        print('-' * 80, '\n')
+            print('-' * 80, '\n')
+        except NetMikoAuthenticationException:
+            print('Auth Error for ', ip)
+
+        except ConnectionException:
+            print('Could not connect to ', ip)
 
 
 def get_ios_version():
     driver_info = get_driver_info()
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
-        ip = driver_info[0] + str(i)
-        device = driver(ip, creds()[0], creds()[1])
-        print(f'\nConnecting to {ip}\n')
-        device.open()
-        info = device.get_facts()
-        print('-' * 80)
-        ios = info['os_version'].split(',')[1]
-        print(f'Your IOS version is {ios}')
+        try:
+            ip = driver_info[0] + str(i)
+            device = driver(ip, creds()[0], creds()[1])
+            print(f'\nConnecting to {ip}\n')
+            device.open()
+            info = device.get_facts()
+            print('-' * 80)
+            ios = info['os_version'].split(',')[1]
+            print(f'Your IOS version is {ios}')
+        except NetMikoAuthenticationException:
+            print('Auth Error for ', ip)
+
+        except ConnectionException:
+            print('Could not connect to ', ip)
 
 
 def link_status():
     driver_info = get_driver_info()
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
-        ip = driver_info[0] + str(i)
-        device = driver(ip, creds()[0], creds()[1])
-        print(f'\nConnecting to {ip}')
-        device.open()
-        status = device.get_interfaces()
-        print('-' * 80)
-        down = 0
-        up = 0
-        print('The following port(s) are connected to a device\n')
-        print('Enabled:')
+        try:
+            ip = driver_info[0] + str(i)
+            device = driver(ip, creds()[0], creds()[1])
+            print(f'\nConnecting to {ip}')
+            device.open()
+            status = device.get_interfaces()
+            print('-' * 80)
+            down = 0
+            up = 0
+            print('The following port(s) are connected to a device\n')
+            print('Enabled:')
 
-        for interface in status:
-            if interface[0] == "V":
-                up = up
-                down = down
+            for interface in status:
+                if interface[0] == "V":
+                    up = up
+                    down = down
 
-            elif status[interface]['is_up'] and status[interface]['is_enabled']:
-                print(interface, status[interface]['description'])
-                up += 1
+                elif status[interface]['is_up'] and status[interface]['is_enabled']:
+                    print(interface, status[interface]['description'])
+                    up += 1
 
-            elif status[interface]['is_up'] and not status[interface]['is_enabled']:
-                down += 1
+                elif status[interface]['is_up'] and not status[interface]['is_enabled']:
+                    down += 1
 
-            elif not status[interface]['is_up'] and not status[interface]['is_enabled']:
-                down += 1
+                elif not status[interface]['is_up'] and not status[interface]['is_enabled']:
+                    down += 1
 
-            else:
-                down += 1
+                else:
+                    down += 1
 
-        all_interfaces = up + down
-        interface_port = down - up
-        print(f'\nYou have {interface_port} port(s) NOTCONNECT or DISABLED')
-        print(f'You have {up} port(s) in a CONNECT state')
-        print(f'Total number of physical port(s) {all_interfaces}\n')
+            all_interfaces = up + down
+            interface_port = down - up
+            print(
+                f'\nYou have {interface_port} port(s) NOTCONNECT or DISABLED')
+            print(f'You have {up} port(s) in a CONNECT state')
+            print(f'Total number of physical port(s) {all_interfaces}\n')
+        except NetMikoAuthenticationException:
+            print('Auth Error for ', ip)
+
+        except ConnectionException:
+            print('Could not connect to ', ip)
 
 
 def get_interface_name():
     driver_info = get_driver_info()
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
-        ip = driver_info[0] + str(i)
-        device = driver(ip, creds()[0], creds()[1])
-        print(f'\nConnecting to {ip}')
-        device.open()
-        interfaces = device.get_interfaces()
-        print('-' * 80)
-        for i in interfaces:
-            interface = i
-            description = interfaces[interface]['description']
-            print(interface, description)
+        try:
+            ip = driver_info[0] + str(i)
+            device = driver(ip, creds()[0], creds()[1])
+            print(f'\nConnecting to {ip}')
+            device.open()
+            interfaces = device.get_interfaces()
+            print('-' * 80)
+            for i in interfaces:
+                interface = i
+                description = interfaces[interface]['description']
+                print(interface, description)
+        except NetMikoAuthenticationException:
+            print('Auth Error for ', ip)
+
+        except ConnectionException:
+            print('Could not connect to ', ip)
 
 
 def port_security():
     driver_info = get_driver_info()
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
-        ip = driver_info[0] + str(i)
-        device = driver(ip, creds()[0], creds()[1])
-        print(f'\nConnecting to {ip}')
-        device.open()
-        print('-' * 80)
-        print('The following port(s) have tripped port-security \n')
-        print(device.device.send_command('sh int status err-disabled'))
-    print('-' * 80)
+        try:
+            ip = driver_info[0] + str(i)
+            device = driver(ip, creds()[0], creds()[1])
+            print(f'\nConnecting to {ip}')
+            device.open()
+            print('-' * 80)
+            print('The following port(s) have tripped port-security \n')
+            print(device.device.send_command('sh int status err-disabled'))
+            print('-' * 80)
+        except NetMikoAuthenticationException:
+            print('Auth Error for ', ip)
+
+        except ConnectionException:
+            print('Could not connect to ', ip)
 
 
 def creds():
@@ -147,21 +178,27 @@ def creds():
 def check_ios():
     driver_info = get_driver_info()
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
-        ip = driver_info[0] + str(i)
-        device = driver(ip, creds()[0], creds()[1])
-        print(f'\nConnecting to {ip}')
-        device.open()
-        print('-' * 80)
-        info = device.get_facts()
-        ios_trans = info['os_version'].split(',')[1]
-        ios_current = ios_trans.split()[1]
-        ios_new = input(
-            '\nEnter ios version to for check compliance Example(X.X.X): ')
-        print(f'Your current ios is {ios_current}.')
-        if ios_current != ios_new:
-            print('You may need to update your ios. ')
-        if ios_current == ios_new:
-            print(f'Your ios {ios_current} is compliant.')
+        try:
+            ip = driver_info[0] + str(i)
+            device = driver(ip, creds()[0], creds()[1])
+            print(f'\nConnecting to {ip}')
+            device.open()
+            print('-' * 80)
+            info = device.get_facts()
+            ios_trans = info['os_version'].split(',')[1]
+            ios_current = ios_trans.split()[1]
+            ios_new = input(
+                '\nEnter ios version to for check compliance Example(X.X.X): ')
+            print(f'Your current ios is {ios_current}.')
+            if ios_current != ios_new:
+                print('You may need to update your ios. ')
+            if ios_current == ios_new:
+                print(f'Your ios {ios_current} is compliant.')
+        except NetMikoAuthenticationException:
+            print('Auth Error for ', ip)
+
+        except ConnectionException:
+            print('Could not connect to ', ip)
 
 
 def make_golden_configs(ip, username, password):
@@ -222,29 +259,23 @@ def enable_portfast(ip, username, password):
                     ])
                     )
             print(device.device.send_command('wr'))
-
+            device.close()
         except NetMikoAuthenticationException:
             print('Auth Error for ', ip)
 
         except ConnectionException:
             print('Could not connect to ', ip)
-    device.close()
 
 
 def tftp_ios():
-    network = "10.231.27."  # input('Enter your subnet Example "10.231.27." ')
-    minimal = "8"  # input('Enter network beginning host octet: ')
-    maximum = "36"  # input(
-    # 'Enter broadcast address octet or\nEnter your last host octet: ')
-    username = creds()[0]  # input('Please enter your username \n')
-    password = creds()[1]  # getpass('Please enter your password \n')
-    tftpServer = "168.248.27.71"  # input(
-    # "Please enter your tftp server address x.x.x.x: ")
-    ios = "c3750_test.bin"  # input("Whats is your ios name: ")
-    for switch in range(int(minimal), int(maximum)):
+    driver_info = get_driver_info()
+    tftpServer = input(
+        "Please enter your tftp server address x.x.x.x: ")
+    ios = input("Whats is your new EXACT ios name: ")
+    for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
-            ip = str(network) + str(switch)
-            device = driver(ip, username, password, timeout=5)
+            ip = driver_info[0] + str(i)
+            device = driver(ip, creds()[0], creds()[1])
             device.open()
             print(f'\nConnecting to {ip}')
             print('-' * 80 + '\n')
