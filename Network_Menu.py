@@ -25,6 +25,7 @@ If using for a single host enter last octet of host:
 
 def get_info():
     driver_info = get_driver_info()
+    option = int(input('(0) Print to screen \n(1) Write to file '))
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
             ip = driver_info[0] + str(i)
@@ -46,13 +47,19 @@ def get_info():
                     interface += 1
                 elif i[0:18] == "GigabitEthernet1/1" or i[0:4] == "Te1/1":
                     sfp += 1
-            print(f'''
-Your device's name is {hostname}.
+            facts = f'''
+Your device's name is {hostname}({ip}).
 It is made by {vendor} and is a {model}.
 It's serial number is {serial}.
 The version of ios is {ios}
 Your device has {interface} interfaces and {sfp} SFP.
-        ''')
+'''
+            if option == 0:
+                print(facts)
+            elif option == 1:
+                f = open('Facts.txt', 'a')
+                f.write(facts)
+                f.close()
             print('-' * 80, '\n')
         except NetMikoAuthenticationException:
             print('Auth Error for ', ip)
