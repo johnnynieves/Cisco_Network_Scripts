@@ -5,6 +5,8 @@ from netmiko import NetMikoAuthenticationException
 from os import system
 
 driver = get_network_driver('ios')
+auth_error = 'Auth Error for '
+cannot_connect = 'Could not connect to '
 
 
 def get_driver_info():
@@ -57,34 +59,49 @@ Your device has {interface} interfaces and {sfp} SFP.
             if option == 0:
                 print(facts)
             elif option == 1:
+                system("rm Facts.txt")
                 f = open('Facts.txt', 'a')
                 f.write(facts)
                 f.close()
-            print('-' * 80, '\n')
+                print("Written to file.")
+                print('-' * 80, '\n')
         except NetMikoAuthenticationException:
-            print('Auth Error for ', ip)
+            print(auth_error, ip)
+            print('-' * 80, '\n')
 
         except ConnectionException:
-            print('Could not connect to ', ip)
+            print(cannot_connect, ip)
+            print('-' * 80, '\n')
 
 
 def get_ios_version():
     driver_info = get_driver_info()
+    option = int(input('(0) Print to screen \n(1) Write to file '))
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
             ip = driver_info[0] + str(i)
             device = driver(ip, creds()[0], creds()[1])
-            print(f'\nConnecting to {ip}\n')
+            print(f'\nConnecting to {ip}')
             device.open()
             info = device.get_facts()
             print('-' * 80)
             ios = info['os_version'].split(',')[1]
-            print(f'Your IOS version is {ios}')
+            ios_version = f"{info['hostname']}({ip}) IOS version is {ios}"
+
+            if option == 0:
+                print(ios_version)
+            elif option == 1:
+                system("rm Switch_IOS.txt")
+                f = open('Switch_IOS.txt', 'a')
+                f.write(ios_version)
+                f.close()
+                print("Written to file.")
+                print('-' * 80, '\n')
         except NetMikoAuthenticationException:
-            print('Auth Error for ', ip)
+            print(auth_error, ip)
 
         except ConnectionException:
-            print('Could not connect to ', ip)
+            print(cannot_connect, ip)
 
 
 def link_status():
@@ -127,10 +144,10 @@ def link_status():
             print(f'You have {up} port(s) in a CONNECT state')
             print(f'Total number of physical port(s) {all_interfaces}\n')
         except NetMikoAuthenticationException:
-            print('Auth Error for ', ip)
+            print(auth_error, ip)
 
         except ConnectionException:
-            print('Could not connect to ', ip)
+            print(cannot_connect, ip)
 
 
 def get_interface_name():
@@ -149,10 +166,10 @@ def get_interface_name():
                 mac = interfaces[interface]['mac_address']
                 print(interface, description, mac)
         except NetMikoAuthenticationException:
-            print('Auth Error for ', ip)
+            print(auth_error, ip)
 
         except ConnectionException:
-            print('Could not connect to ', ip)
+            print(cannot_connect, ip)
 
 
 def port_security():
@@ -168,15 +185,15 @@ def port_security():
             print(device.device.send_command('sh int status err-disabled'))
             print('-' * 80)
         except NetMikoAuthenticationException:
-            print('Auth Error for ', ip)
+            print(auth_error, ip)
 
         except ConnectionException:
-            print('Could not connect to ', ip)
+            print(cannot_connect, ip)
 
 
 def creds():
     credentials = []
-    with open('/home/johnny/creds', 'r') as f:
+    with open('/home/rosadolores/creds', 'r') as f:
         credentials = f.read()
     credentials = credentials.strip("").splitlines()
     # print(credentials)
@@ -203,10 +220,10 @@ def check_ios():
             if ios_current == ios_new:
                 print(f'Your ios {ios_current} is compliant.')
         except NetMikoAuthenticationException:
-            print('Auth Error for ', ip)
+            print(auth_error, ip)
 
         except ConnectionException:
-            print('Could not connect to ', ip)
+            print(cannot_connect, ip)
 
 
 def make_golden_configs(ip, username, password):
@@ -269,10 +286,10 @@ def enable_portfast(ip, username, password):
             print(device.device.send_command('wr'))
             device.close()
         except NetMikoAuthenticationException:
-            print('Auth Error for ', ip)
+            print(auth_error, ip)
 
         except ConnectionException:
-            print('Could not connect to ', ip)
+            print(cannot_connect, ip)
 
 
 def tftp_ios():
@@ -334,10 +351,10 @@ def tftp_ios():
 
             device.close()
         except NetMikoAuthenticationException:
-            print('Auth Error for ', ip)
+            print(auth_error, ip)
 
         except ConnectionException:
-            print('Could not connect to ', ip)
+            print(cannot_connect, ip)
 
 
 def menu():
