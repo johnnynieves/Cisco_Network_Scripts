@@ -104,8 +104,9 @@ def get_ios_version():
             print(cannot_connect, ip)
 
 
-def link_status():
+def get_link_status():
     driver_info = get_driver_info()
+    option = int(input('(0) Print to screen \n(1) Write to file '))
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
             ip = driver_info[0] + str(i)
@@ -116,16 +117,25 @@ def link_status():
             print('-' * 80)
             down = 0
             up = 0
-            print('The following port(s) are connected to a device\n')
-            print('Enabled:')
+            upup = []
 
+            statement = f'''
+The following port(s) on {ip} are connected to a device:
+
+'''
+            if option == 0:
+                print(statement)
             for interface in status:
                 if interface[0] == "V":
                     up = up
                     down = down
 
                 elif status[interface]['is_up'] and status[interface]['is_enabled']:
-                    print(interface, status[interface]['description'])
+                    if option == 0:
+                        print(interface, status[interface]['description'])
+                    elif option == 1:
+                        upup.append(
+                            f"{interface}, {status[interface]['description']}")
                     up += 1
 
                 elif status[interface]['is_up'] and not status[interface]['is_enabled']:
@@ -139,15 +149,30 @@ def link_status():
 
             all_interfaces = up + down
             interface_port = down - up
-            print(
-                f'\nYou have {interface_port} port(s) NOTCONNECT or DISABLED')
-            print(f'You have {up} port(s) in a CONNECT state')
-            print(f'Total number of physical port(s) {all_interfaces}\n')
+            link_status = f'''
+You have {interface_port} port(s) NOTCONNECT or DISABLED
+You have {up} port(s) in a CONNECT state
+Total number of physical port(s) {all_interfaces}\n
+'''
+            if option == 0:
+                print(link_status)
+            elif option == 1:
+                system("rm Switch_Link_Status.txt")
+                f = open('Switch_Link_Status.txt', 'a')
+                f.write(statement)
+                for i in upup:
+                    f.write(f'{i}\n')
+                f.write(link_status)
+                f.write(' \n')
+                f.close()
+                print("Written to file.")
+                print('-' * 80, '\n')
         except NetMikoAuthenticationException:
             print(auth_error, ip)
-
+            print('-' * 80)
         except ConnectionException:
             print(cannot_connect, ip)
+            print('-' * 80)
 
 
 def get_interface_name():
@@ -410,7 +435,7 @@ def menu():
         # menu()
 
     elif tool == 4:
-        link_status()
+        get_link_status()
         input('Press enter to continue\n')
         system('clear')
         menu()
