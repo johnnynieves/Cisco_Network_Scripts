@@ -1,6 +1,0 @@
-
-Your device's name is Distro(10.0.50.30).
-It is made by Cisco and is a WS-C3750X-48P.
-It's serial number is FDO1630P12L.
-The version of ios is C3750E Software (C3750E-UNIVERSALK9-M), Version 15.2(4)E10, RELEASE SOFTWARE (fc2)
-Your device has 48 interfaces and 4 SFP.
