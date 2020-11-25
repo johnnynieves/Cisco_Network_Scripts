@@ -1,0 +1,63 @@
+Vlan1, , 60:73:5C:45:7B:40
+Vlan107, IOTs, 60:73:5C:45:7B:41
+Vlan200, Labs, 60:73:5C:45:7B:42
+Vlan300, MGMT, 60:73:5C:45:7B:43
+Vlan500, Users, 60:73:5C:45:7B:44
+Vlan600, Future Use, 60:73:5C:45:7B:45
+Vlan777, , 60:73:5C:45:7B:46
+Vlan999, , 60:73:5C:45:7B:47
+FastEthernet0, Mgmt, 60:73:5C:45:7B:39
+GigabitEthernet1/0/1, , 60:73:5C:45:7B:01
+GigabitEthernet1/0/2, Gabriel Room D2, 60:73:5C:45:7B:02
+GigabitEthernet1/0/3, , 60:73:5C:45:7B:03
+GigabitEthernet1/0/4, Kids Room D2, 60:73:5C:45:7B:04
+GigabitEthernet1/0/5, , 60:73:5C:45:7B:05
+GigabitEthernet1/0/6, Rosa Office D2, 60:73:5C:45:7B:06
+GigabitEthernet1/0/7, , 60:73:5C:45:7B:07
+GigabitEthernet1/0/8, Johnny Office Wireless Router D2, 60:73:5C:45:7B:08
+GigabitEthernet1/0/9, , 60:73:5C:45:7B:09
+GigabitEthernet1/0/10, Wireless Upstairs, 60:73:5C:45:7B:0A
+GigabitEthernet1/0/11, , 60:73:5C:45:7B:0B
+GigabitEthernet1/0/12, Living Room D1, 60:73:5C:45:7B:0C
+GigabitEthernet1/0/13, , 60:73:5C:45:7B:0D
+GigabitEthernet1/0/14, Bedroom D1, 60:73:5C:45:7B:0E
+GigabitEthernet1/0/15, , 60:73:5C:45:7B:0F
+GigabitEthernet1/0/16, Kids Room D1, 60:73:5C:45:7B:10
+GigabitEthernet1/0/17, , 60:73:5C:45:7B:11
+GigabitEthernet1/0/18, Rosa Office D1, 60:73:5C:45:7B:12
+GigabitEthernet1/0/19, , 60:73:5C:45:7B:13
+GigabitEthernet1/0/20, Johnny Office Labs Server D1, 60:73:5C:45:7B:14
+GigabitEthernet1/0/21, , 60:73:5C:45:7B:15
+GigabitEthernet1/0/22, Gabriel Room D1, 60:73:5C:45:7B:16
+GigabitEthernet1/0/23, , 60:73:5C:45:7B:17
+GigabitEthernet1/0/24, Video Monitoring System, 60:73:5C:45:7B:18
+GigabitEthernet1/0/25, , 60:73:5C:45:7B:19
+GigabitEthernet1/0/26, , 60:73:5C:45:7B:1A
+GigabitEthernet1/0/27, , 60:73:5C:45:7B:1B
+GigabitEthernet1/0/28, , 60:73:5C:45:7B:1C
+GigabitEthernet1/0/29, , 60:73:5C:45:7B:1D
+GigabitEthernet1/0/30, , 60:73:5C:45:7B:1E
+GigabitEthernet1/0/31, , 60:73:5C:45:7B:1F
+GigabitEthernet1/0/32, , 60:73:5C:45:7B:20
+GigabitEthernet1/0/33, , 60:73:5C:45:7B:21
+GigabitEthernet1/0/34, , 60:73:5C:45:7B:22
+GigabitEthernet1/0/35, , 60:73:5C:45:7B:23
+GigabitEthernet1/0/36, , 60:73:5C:45:7B:24
+GigabitEthernet1/0/37, , 60:73:5C:45:7B:25
+GigabitEthernet1/0/38, , 60:73:5C:45:7B:26
+GigabitEthernet1/0/39, , 60:73:5C:45:7B:27
+GigabitEthernet1/0/40, , 60:73:5C:45:7B:28
+GigabitEthernet1/0/41, , 60:73:5C:45:7B:29
+GigabitEthernet1/0/42, , 60:73:5C:45:7B:2A
+GigabitEthernet1/0/43, , 60:73:5C:45:7B:2B
+GigabitEthernet1/0/44, , 60:73:5C:45:7B:2C
+GigabitEthernet1/0/45, MGMT-Port-AUX, 60:73:5C:45:7B:2D
+GigabitEthernet1/0/46, to_Solar, 60:73:5C:45:7B:2E
+GigabitEthernet1/0/47, Wireless Upstairs, 60:73:5C:45:7B:2F
+GigabitEthernet1/0/48, to Firewall, 60:73:5C:45:7B:30
+GigabitEthernet1/1/1, , 60:73:5C:45:7B:31
+GigabitEthernet1/1/2, , 60:73:5C:45:7B:32
+GigabitEthernet1/1/3, , 60:73:5C:45:7B:33
+GigabitEthernet1/1/4, , 60:73:5C:45:7B:34
+TenGigabitEthernet1/1/1, , 60:73:5C:45:7B:35
+TenGigabitEthernet1/1/2, , 60:73:5C:45:7B:36

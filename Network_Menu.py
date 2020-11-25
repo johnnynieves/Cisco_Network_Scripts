@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from napalm import get_network_driver
 from napalm.base.exceptions import ConnectionException
 from getpass import getpass
@@ -7,6 +8,15 @@ from os import system
 driver = get_network_driver('ios')
 auth_error = 'Auth Error for '
 cannot_connect = 'Could not connect to '
+
+
+def creds():
+    credentials = []
+    with open('/home/johnny/creds', 'r') as f:
+        credentials = f.read()
+    credentials = credentials.strip("").splitlines()
+    # print(credentials)
+    return credentials
 
 
 def get_driver_info():
@@ -28,6 +38,8 @@ If using for a single host enter last octet of host:
 def get_info():
     driver_info = get_driver_info()
     option = int(input('(0) Print to screen \n(1) Write to file '))
+    system("rm Switch_facts.txt")
+    f = open('Switch_facts.txt', 'a')
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
             ip = driver_info[0] + str(i)
@@ -59,24 +71,24 @@ Your device has {interface} interfaces and {sfp} SFP.
             if option == 0:
                 print(facts)
             elif option == 1:
-                system("rm Facts.txt")
-                f = open('Facts.txt', 'a')
                 f.write(facts)
-                f.close()
                 print("Written to file.")
                 print('-' * 80, '\n')
+
         except NetMikoAuthenticationException:
             print(auth_error, ip)
-            print('-' * 80, '\n')
-
+            print('-' * 80)
         except ConnectionException:
             print(cannot_connect, ip)
-            print('-' * 80, '\n')
+            print('-' * 80)
+    f.close()
 
 
 def get_ios_version():
     driver_info = get_driver_info()
     option = int(input('(0) Print to screen \n(1) Write to file '))
+    system("rm Switch_ios.txt")
+    f = open('Switch_ios.txt', 'a')
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
             ip = driver_info[0] + str(i)
@@ -91,22 +103,24 @@ def get_ios_version():
             if option == 0:
                 print(ios_version)
             elif option == 1:
-                system("rm Switch_IOS.txt")
-                f = open('Switch_IOS.txt', 'a')
                 f.write(ios_version)
                 f.close()
                 print("Written to file.")
                 print('-' * 80, '\n')
         except NetMikoAuthenticationException:
             print(auth_error, ip)
-
+            print('-' * 80)
         except ConnectionException:
             print(cannot_connect, ip)
+            print('-' * 80)
+    f.close()
 
 
 def get_link_status():
     driver_info = get_driver_info()
     option = int(input('(0) Print to screen \n(1) Write to file '))
+    system("rm Switch_Link_Status.txt")
+    f = open('Switch_Link_Status.txt', 'a')
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
             ip = driver_info[0] + str(i)
@@ -157,14 +171,11 @@ Total number of physical port(s) {all_interfaces}\n
             if option == 0:
                 print(link_status)
             elif option == 1:
-                system("rm Switch_Link_Status.txt")
-                f = open('Switch_Link_Status.txt', 'a')
                 f.write(statement)
                 for i in upup:
                     f.write(f'{i}\n')
                 f.write(link_status)
                 f.write(' \n')
-                f.close()
                 print("Written to file.")
                 print('-' * 80, '\n')
         except NetMikoAuthenticationException:
@@ -173,10 +184,14 @@ Total number of physical port(s) {all_interfaces}\n
         except ConnectionException:
             print(cannot_connect, ip)
             print('-' * 80)
+    f.close()
 
 
 def get_interface_name():
     driver_info = get_driver_info()
+    option = int(input('(0) Print to screen \n(1) Write to file '))
+    system("rm Switch_Interface_Info.txt")
+    f = open("Switch_Interface_Info.txt", "a")
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
             ip = driver_info[0] + str(i)
@@ -189,16 +204,29 @@ def get_interface_name():
                 interface = i
                 description = interfaces[interface]['description']
                 mac = interfaces[interface]['mac_address']
-                print(interface, description, mac)
+                results = f'{interface}, {description}, {mac}'
+                if option == 0:
+                    print(results)
+                elif option == 1:
+                    f.write(f'{results}\n')
+            f.close()
+            print("Written to file.")
+            print('-' * 80, '\n')
+
         except NetMikoAuthenticationException:
             print(auth_error, ip)
-
+            print('-' * 80)
         except ConnectionException:
             print(cannot_connect, ip)
+            print('-' * 80)
+    f.close()
 
 
 def port_security():
     driver_info = get_driver_info()
+    option = int(input('(0) Print to screen \n(1) Write to file '))
+    system("rm Switch_errorports.txt")
+    f = open('Switch_errorports.txt', 'a')
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
             ip = driver_info[0] + str(i)
@@ -206,27 +234,31 @@ def port_security():
             print(f'\nConnecting to {ip}')
             device.open()
             print('-' * 80)
-            print('The following port(s) have tripped port-security \n')
-            print(device.device.send_command('sh int status err-disabled'))
+            report = f'''
+The following port(s) have tripped port-security on {ip}
+{device.device.send_command('sh int status err-disabled')}
+'''
+            if option == 0:
+                print(report)
+            elif option == 1:
+                f.write(report)
             print('-' * 80)
         except NetMikoAuthenticationException:
             print(auth_error, ip)
-
+            print('-' * 80)
         except ConnectionException:
             print(cannot_connect, ip)
-
-
-def creds():
-    credentials = []
-    with open('/home/rosadolores/creds', 'r') as f:
-        credentials = f.read()
-    credentials = credentials.strip("").splitlines()
-    # print(credentials)
-    return credentials
+            print('-' * 80)
+    f.close()
 
 
 def check_ios():
     driver_info = get_driver_info()
+    option = int(input('(0) Print to screen \n(1) Write to file '))
+    system("rm Switch_ios_compliance.txt")
+    f = open('Switch_ios_compliance.txt', 'a')
+    ios_new = input(
+        '\nEnter ios version to check compliance for:  Example(X.X.X): ')
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
             ip = driver_info[0] + str(i)
@@ -237,18 +269,30 @@ def check_ios():
             info = device.get_facts()
             ios_trans = info['os_version'].split(',')[1]
             ios_current = ios_trans.split()[1]
-            ios_new = input(
-                '\nEnter ios version to for check compliance Example(X.X.X): ')
-            print(f'Your current ios is {ios_current}.')
+            if option == 0:
+                print(f'Your current ios is {ios_current}.')
+            elif option == 1:
+                f.write(f'Your current ios is {ios_current}.\n')
+
             if ios_current != ios_new:
-                print('You may need to update your ios. ')
-            if ios_current == ios_new:
-                print(f'Your ios {ios_current} is compliant.')
+                if option == 0:
+                    print('You may need to update your ios. ')
+                elif option == 1:
+                    f.write('You may need to update your ios. \n')
+            elif ios_current == ios_new:
+                if option == 0:
+                    print(f'Your ios {ios_current} is compliant.')
+                elif option == 1:
+                    f.write(f'Your ios {ios_current} is compliant.\n')
+            print("Written to file.")
+            print('-' * 80, '\n')
         except NetMikoAuthenticationException:
             print(auth_error, ip)
-
+            print('-' * 80)
         except ConnectionException:
             print(cannot_connect, ip)
+            print('-' * 80)
+    f.close()
 
 
 def make_golden_configs(ip, username, password):
