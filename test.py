@@ -1,86 +1,79 @@
+from flask.helpers import flash
 from napalm import get_network_driver
 from napalm.base.exceptions import ConnectionException
 from getpass import getpass
 from netmiko import NetMikoAuthenticationException
 from os import system
 from Network_Menu import creds, get_driver_info
+from flask import Flask
+from jinja2 import Template
 
+
+app = Flask(__name__)
 
 driver = get_network_driver('ios')
 auth_error = 'Auth Error for '
 cannot_connect = 'Could not connect to '
 
 
-def get_link_status():
+@app.route('/')
+def greeting():
+    return "<h1> Hello World </h1>"
+
+
+@app.route('/get_facts')
+def get_info():
     driver_info = get_driver_info()
-    option = int(input('(0) Print to screen \n(1) Write to file '))
-    for i in range(int(driver_info[1]), int(driver_info[2])+1):
-        try:
-            ip = driver_info[0] + str(i)
-            device = driver(ip, creds()[0], creds()[1])
-            print(f'\nConnecting to {ip}')
-            device.open()
-            status = device.get_interfaces()
-            print('-' * 80)
-            down = 0
-            up = 0
-            upup = []
-
-            statement = f'''
-The following port(s) on {ip} are connected to a device:
-
-'''
-            if option == 0:
-                print(statement)
-            for interface in status:
-                if interface[0] == "V":
-                    up = up
-                    down = down
-
-                elif status[interface]['is_up'] and status[interface]['is_enabled']:
-                    if option == 0:
-                        print(interface, status[interface]['description'])
-                    elif option == 1:
-                        upup.append(
-                            f"{interface}, {status[interface]['description']}")
-                    up += 1
-
-                elif status[interface]['is_up'] and not status[interface]['is_enabled']:
-                    down += 1
-
-                elif not status[interface]['is_up'] and not status[interface]['is_enabled']:
-                    down += 1
-
-                else:
-                    down += 1
-
-            all_interfaces = up + down
-            interface_port = down - up
-            link_status = f'''
-You have {interface_port} port(s) NOTCONNECT or DISABLED
-You have {up} port(s) in a CONNECT state
-Total number of physical port(s) {all_interfaces}\n
-'''
-            if option == 0:
-                print(link_status)
-            elif option == 1:
-                system("rm Switch_Link_Status.txt")
-                f = open('Switch_Link_Status.txt', 'a')
-                f.write(statement)
-                for i in upup:
-                    f.write(f'{i}\n')
-                f.write(link_status)
-                f.write(' \n')
-                f.close()
-                print("Written to file.")
-                print('-' * 80, '\n')
-        except NetMikoAuthenticationException:
-            print(auth_error, ip)
-            print('-' * 80)
-        except ConnectionException:
-            print(cannot_connect, ip)
-            print('-' * 80)
+    ip = driver_info[0] + str(i)
+    device = driver(ip, creds()[0], creds()[1])
+    "<h1> Connecting to {ip} </h1>"
+    device.open()
+    return device.get_facts()
 
 
+#     driver_info = get_driver_info()
+#     option = int(input('(0) Print to screen \n(1) Write to file '))
+#     system("rm Switch_facts.txt")
+#     f = open('Switch_facts.txt', 'a')
+#     for i in range(int(driver_info[1]), int(driver_info[2])+1):
+#         try:
+#             ip = driver_info[0] + str(i)
+#             device = driver(ip, creds()[0], creds()[1])
+#             print(f'\nConnecting to {ip}')
+#             device.open()
+#             info = device.get_facts()
+#             print('-' * 80)
+#             ios = info['os_version']
+#             hostname = info['hostname']
+#             vendor = info['vendor']
+#             model = info['model']
+#             serial = info['serial_number']
+#             interface = 0
+#             sfp = 0
+#             for i in info['interface_list']:
+#                 if i[0:18] == "GigabitEthernet1/0":
+#                     interface += 1
+#                 elif i[0:18] == "GigabitEthernet1/1" or i[0:4] == "Te1/1":
+#                     sfp += 1
+#             facts = f'''
+# Your device's name is {hostname}({ip}).
+# It is made by {vendor} and is a {model}.
+# It's serial number is {serial}.
+# The version of ios is {ios}
+# Your device has {interface} interfaces and {sfp} SFP.
+# '''
+#             if option == 0:
+#                 print(facts)
+#             elif option == 1:
+#                 f.write(facts)
+#                 print("Written to file.")
+#                 print('-' * 80, '\n')
+#         except NetMikoAuthenticationException:
+#             print(auth_error, ip)
+#             print('-' * 80)
+#         except ConnectionException:
+#             print(cannot_connect, ip)
+#             print('-' * 80)
+#     f.close()
 if __name__ == "__main__":
-    get_link_status()
+    app.run(debug=True)

@@ -10,6 +10,7 @@ napalm = "*"
 datetime = "*"
 xmltodict = "*"
 autopep8 = "*"
+flask = "*"
 
 [requires]
 python_version = "3.8"

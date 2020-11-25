@@ -3,7 +3,8 @@ from napalm import get_network_driver
 from napalm.base.exceptions import ConnectionException
 from getpass import getpass
 from netmiko import NetMikoAuthenticationException
-from os import system
+from os import sendfile, system, wait
+from time import sleep
 
 driver = get_network_driver('ios')
 auth_error = 'Auth Error for '
@@ -295,6 +296,28 @@ def check_ios():
     f.close()
 
 
+def set_acl():
+    driver_info = get_driver_info()
+    sleep(30)
+    for i in range(int(driver_info[1]), int(driver_info[2])+1):
+        try:
+            ip = driver_info[0] + str(i)
+            device = driver(ip, creds()[0], creds()[1])
+            print(f'\nConnecting to {ip}')
+            device.open()
+            with open('config', 'r') as f:
+                config = f.readlines()
+                print('-' * 80)
+                print(device.device.send_config_set(config))
+                print('-' * 80)
+        except NetMikoAuthenticationException:
+            print(auth_error, ip)
+            print('-' * 80)
+        except ConnectionException:
+            print(cannot_connect, ip)
+            print('-' * 80)
+
+
 def make_golden_configs(ip, username, password):
     with driver(ip, username, password) as device:
         device = driver(ip, username, password)
@@ -446,7 +469,8 @@ def menu():
     print('7.  Make "Golden" Configs')
     print('8.  Verify configs against "Golden" configs')
     print('9.  Enable Portfast')
-    print('10. Check ios version compliance\n')
+    print('10. Check ios version compliance')
+    print('11. Set ACL from config file\n')
     print('0. to quit')
     print()
     print('*' * 80)
@@ -525,6 +549,12 @@ def menu():
 
     elif tool == 10:
         check_ios()
+        input('Press enter to continue\n')
+        system('clear')
+        menu()
+
+    elif tool == 11:
+        set_acl()
         input('Press enter to continue\n')
         system('clear')
         menu()
