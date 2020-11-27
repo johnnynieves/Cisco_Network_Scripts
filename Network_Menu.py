@@ -296,7 +296,7 @@ def check_ios():
     f.close()
 
 
-def set_acl():
+def set_configs():
     driver_info = get_driver_info()
     sleep(30)
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
@@ -318,70 +318,64 @@ def set_acl():
             print('-' * 80)
 
 
-def make_golden_configs(ip, username, password):
-    with driver(ip, username, password) as device:
-        device = driver(ip, username, password)
-        device.open()
-        print(f'\nConnecting to {ip}')
-        print('~' * 80)
-        print('Creating your "Golden" configs')
-        print('~' * 80)
-        golden_configs = device.get_config(
-            retrieve=u'running', full=False)['running']
-
-        with open('Golden_Configs.txt', 'w') as f:
-            f.write(golden_configs)
-        print('Your configs have been made')
-        print('File located in root of where you ran this program.')
-
-
-def verify_configs(ip, username, password):
-    with driver(ip, username, password) as device:
-        print(f'\nConnecting to {ip}')
-        print('~' * 80)
-        print('Retrieving your running configs')
-        print('~' * 80)
-        get_running = device.get_config(
-            retrieve=u'running', full=False)['running']
-
-        with open('Golden_Configs.txt', 'r') as d:
-            data = d.read()
-        print('Verifying running configs against "Golden" configs .....\n')
-        if get_running == data:
-            print('Your running configs match the golden configs')
-        else:
-            print('Your running configs DO NOT match the golden configs')
-
-
-def enable_portfast(ip, username, password):
-    network = input('Example 10.231.27.')
-    subnetmin = input('Example Subnet range starts at 1 ')
-    subnetmax = input('Example Subnet range ends at 28 ')
-
-    for sw in range(subnetmin, subnetmax):
+def get_configs():
+    driver_info = get_driver_info()
+    for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
-            ip = network + str(sw)
-            device = driver(ip, username, password)
-            device.open()
+            ip = driver_info[0] + str(i)
+            device = driver(ip, creds()[0], creds()[1])
             print(f'\nConnecting to {ip}')
-            print('-' * 80 + '\n')
-            data = device.get_interfaces()
-            for i in data:
-                if i[0] == 'G' and data[i]['is_up'] and data[i][
-                        'is_enabled']:
-                    print(device.device.send_config_set([
-                        'interface ' + i,
-                        'spanning-tree portfast edge',
-                        'end'
-                    ])
-                    )
-            print(device.device.send_command('wr'))
-            device.close()
+            device.open()
+            print('~' * 80)
+            print('Creating your "Golden" configs')
+            print('~' * 80)
+            golden_configs = device.get_config(
+                retrieve=u'running', full=False)['running']
+            golden = golden_configs.split('\n')
+            with open('Golden_Configs.txt', 'w') as f:
+                f.write(golden)
+            print('Your configs have been made')
+            print('File located in root of where you ran this program.')
+
         except NetMikoAuthenticationException:
             print(auth_error, ip)
-
+            print('-' * 80)
         except ConnectionException:
             print(cannot_connect, ip)
+            print('-' * 80)
+
+
+def verify_configs():
+    driver_info = get_driver_info()
+    for i in range(int(driver_info[1]), int(driver_info[2])+1):
+        try:
+            ip = driver_info[0] + str(i)
+            device = driver(ip, creds()[0], creds()[1])
+            print(f'\nConnecting to {ip}')
+            device.open()
+            print('~' * 80)
+            get_running = device.get_config(
+                retrieve=u'running', full=False)['running']
+            running_config = get_running.split('\n')
+            for line in running_config:
+                print(line)
+            # print(type(get_running))
+            with open('Golden_Configs.txt', 'r') as g:
+                config = g.readlines()
+                for line in config:
+                    print(line)
+            print('Verifying running configs against "Golden" configs .....\n')
+            if running_config == config:
+                print('Your running configs match the golden configs')
+            else:
+                print('Your running configs DO NOT match the golden configs')
+            print('~' * 80)
+        except NetMikoAuthenticationException:
+            print(auth_error, ip)
+            print('-' * 80)
+        except ConnectionException:
+            print(cannot_connect, ip)
+            print('-' * 80)
 
 
 def tftp_ios():
@@ -399,19 +393,19 @@ def tftp_ios():
             print('Connected')
 
             '''
-            Had to modify the below in Netmiko cisco base connection.py due to 
+            Had to modify the below in Netmiko cisco base connection.py due to
             tftp timingout.
             File "/usr/local/lib/python3.8/dist-packages/netmiko/base_connection.py", line 1620
             to open in vscode use the below
             sudo code /usr/local/lib/python3.8/dist-packages/netmiko/base_connection.py  --user-data-dir
-            
+
             - My Change
             delay_factor=100,
             max_loops=1000,
             strip_prompt=False,
             strip_command=False,
             config_mode_command=None
-            
+
             I changed these variables
             for tftp timing out
             delay_factor=1, Original
@@ -468,9 +462,8 @@ def menu():
     print('6.  Check Interface Names')
     print('7.  Make "Golden" Configs')
     print('8.  Verify configs against "Golden" configs')
-    print('9.  Enable Portfast')
-    print('10. Check ios version compliance')
-    print('11. Set ACL from config file\n')
+    print('9. Check ios version compliance')
+    print('10. Set configs from config file\n')
     print('0. to quit')
     print()
     print('*' * 80)
@@ -494,13 +487,6 @@ def menu():
         input('Press enter to continue\n')
         system('clear')
         menu()
-        # ip = input('Please enter your IP x.x.x.x \n')
-        # username = input('Please enter your username \n')
-        # password = getpass('Please enter your password \n')
-        # ios_upgrade(ip, username, password)
-        # input('Press enter to continue\n')
-        # system('clear')
-        # menu()
 
     elif tool == 4:
         get_link_status()
@@ -521,40 +507,25 @@ def menu():
         menu()
 
     elif tool == 7:
-        ip = input('Please enter your IP x.x.x.x \n')
-        username = input('Please enter your username \n')
-        password = getpass('Please enter your password \n')
-        make_golden_configs(ip, username, password)
+        get_configs()
         input('Press enter to continue\n')
         system('clear')
         menu()
 
     elif tool == 8:
-        ip = input('Please enter your IP x.x.x.x \n')
-        username = input('Please enter your username \n')
-        password = getpass('Please enter your password \n')
-        verify_configs(ip, username, password)
+        verify_configs()
         input('Press enter to continue\n')
         system('clear')
         menu()
 
     elif tool == 9:
-        ip = input('Please enter your IP x.x.x.x \n')
-        username = input('Please enter your username \n')
-        password = getpass('Please enter your password \n')
-        verify_configs(ip, username, password)
-        input('Press enter to continue\n')
-        system('clear')
-        menu()
-
-    elif tool == 10:
         check_ios()
         input('Press enter to continue\n')
         system('clear')
         menu()
 
-    elif tool == 11:
-        set_acl()
+    elif tool == 10:
+        set_configs()
         input('Press enter to continue\n')
         system('clear')
         menu()
