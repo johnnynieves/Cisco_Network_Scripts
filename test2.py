@@ -1,3 +1,4 @@
+#!/usr/bin/python3 
 from napalm import get_network_driver
 from napalm.base.exceptions import ConnectionException
 from getpass import getpass
@@ -10,7 +11,7 @@ auth_error = 'Auth Error for '
 cannot_connect = 'Could not connect to '
 
 
-def set_acl():
+def set_configs():
     driver_info = get_driver_info()
     for i in range(int(driver_info[1]), int(driver_info[2])+1):
         try:
@@ -33,4 +34,4 @@ def set_acl():
 
 
 if __name__ == "__main__":
-    set_acl()
+    set_configs()
