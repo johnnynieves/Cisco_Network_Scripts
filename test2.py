@@ -1,4 +1,4 @@
-#!/usr/bin/python3 
+#!/usr/bin/python3
 from napalm import get_network_driver
 from napalm.base.exceptions import ConnectionException
 from getpass import getpass
