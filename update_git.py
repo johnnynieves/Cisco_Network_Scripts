@@ -8,15 +8,14 @@ def main():
     name = 'johnnynieves'
     os.system(f'git config --global user.email "{user}"')
     os.system(f'git config --global user.name "{name}"')
+    
+    os.system('git status')
     os.system('git add .')
+    os.system('git status')
     comment = input('Please enter your update comment: ')
     os.system(f'git commit -m "{comment}"')
     os.system('git push')
-    print('*' * 80)
-    print(os.system('git status'))
-    print('*' * 80)
 
 
 if __name__ == "__main__":
     main()
-    exit(1)
